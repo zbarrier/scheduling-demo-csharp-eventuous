@@ -5,7 +5,7 @@ using Eventuous.Subscriptions;
 namespace DoctorDay.Application.Queries;
 public interface IAvailableSlotsRepository
 {
-    Task<IEnumerable<ReadModels.AvailableSlot>> GetAvailableSlotsOn(DateTime date, CancellationToken cancellationToken);
+    Task<IEnumerable<ReadModels.AvailableSlot>> GetAvailableSlotsOn(DateTimeOffset date, CancellationToken cancellationToken);
 
     Task<EventHandlingStatus> AddSlot(ReadModels.AvailableSlot availableSlot, CancellationToken cancellationToken);
     Task<EventHandlingStatus> HideSlot(Guid slotId, ulong position, CancellationToken cancellationToken);
