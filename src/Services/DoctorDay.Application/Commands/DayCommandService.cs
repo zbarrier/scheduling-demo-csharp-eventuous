@@ -4,9 +4,9 @@ using DoctorDay.Domain.DayAggregate;
 using Eventuous;
 
 namespace DoctorDay.Application.Commands;
-public sealed class DayService : CommandService<Day, DayState, DayId>
+public sealed class DayCommandService : CommandService<Day, DayState, DayId>
 {
-    public DayService(IAggregateStore store, StreamNameMap? streamNameMap = null)
+    public DayCommandService(IAggregateStore store, StreamNameMap? streamNameMap = null)
         : base(store, streamNameMap:  streamNameMap)
     {
         OnNew<DayCommands.ScheduleDay>(

@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "DoctorDay.Subscriptions.Catchup.RavenDB": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

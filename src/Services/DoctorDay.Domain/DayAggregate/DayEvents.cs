@@ -27,6 +27,6 @@ public static class DayEvents
     [EventType(nameof(DayScheduleArchived_V1))]
     public sealed record DayScheduleArchived_V1();
 
-    public static void MapBookingEvents()
+    public static void MapDayEvents()
         => TypeMap.RegisterKnownEventTypes();
 }

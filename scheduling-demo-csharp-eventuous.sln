@@ -19,19 +19,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DoctorDay", "DoctorDay", "{DEF97E12-59D4-4059-B37E-B975675419FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorDay.Application", "src\Services\DoctorDay.Application\DoctorDay.Application.csproj", "{323E4A8A-AD1D-4E38-AA02-A3530ADEC6B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DoctorDay.Application", "src\Services\DoctorDay.Application\DoctorDay.Application.csproj", "{323E4A8A-AD1D-4E38-AA02-A3530ADEC6B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorDay.Domain", "src\Services\DoctorDay.Domain\DoctorDay.Domain.csproj", "{D2F5EABD-0B24-485F-9173-91D0400E02CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DoctorDay.Domain", "src\Services\DoctorDay.Domain\DoctorDay.Domain.csproj", "{D2F5EABD-0B24-485F-9173-91D0400E02CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Archivers", "src\BuildingBlocks\Archivers\BuildingBlocks.Archivers.csproj", "{581ED6FB-BE34-48B6-AC40-1E0ED0840074}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildingBlocks.Archivers", "src\BuildingBlocks\Archivers\BuildingBlocks.Archivers.csproj", "{581ED6FB-BE34-48B6-AC40-1E0ED0840074}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Archivers.Azure", "src\BuildingBlocks\Archivers.Azure\BuildingBlocks.Archivers.Azure.csproj", "{D7F95253-48EB-4619-BCC0-E5ACA07356AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildingBlocks.Archivers.Azure", "src\BuildingBlocks\Archivers.Azure\BuildingBlocks.Archivers.Azure.csproj", "{D7F95253-48EB-4619-BCC0-E5ACA07356AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.JsonConverters", "src\BuildingBlocks\JsonConverters\BuildingBlocks.JsonConverters.csproj", "{5AC9BCE3-9F05-4EB7-9142-1688F50B6609}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildingBlocks.JsonConverters", "src\BuildingBlocks\JsonConverters\BuildingBlocks.JsonConverters.csproj", "{5AC9BCE3-9F05-4EB7-9142-1688F50B6609}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorDay.Infrastructure.RavenDB", "src\Services\DoctorDay.Infrastructure.RavenDB\DoctorDay.Infrastructure.RavenDB.csproj", "{D8B36C70-39FD-429F-8E5A-EE654CEA6DCF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DoctorDay.Infrastructure.RavenDB", "src\Services\DoctorDay.Infrastructure.RavenDB\DoctorDay.Infrastructure.RavenDB.csproj", "{D8B36C70-39FD-429F-8E5A-EE654CEA6DCF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorDay.Infrastructure.MongoDB", "src\Services\DoctorDay.Infrastructure.MongoDB\DoctorDay.Infrastructure.MongoDB.csproj", "{D88C2696-B2FD-4EE2-BCB9-6762169FC05C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DoctorDay.Infrastructure.MongoDB", "src\Services\DoctorDay.Infrastructure.MongoDB\DoctorDay.Infrastructure.MongoDB.csproj", "{D88C2696-B2FD-4EE2-BCB9-6762169FC05C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildingBlocks.Projections.RavenDB", "src\BuildingBlocks\Projections.RavenDB\BuildingBlocks.Projections.RavenDB.csproj", "{62188750-9074-4FF0-8689-0ED8B7957051}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorDay.Subscriptions.Catchup.RavenDB", "src\Services\DoctorDay.Subscriptions.Catchup.RavenDB\DoctorDay.Subscriptions.Catchup.RavenDB.csproj", "{C2BBD840-8783-4024-99E8-C8C8ED9CC850}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorDay.API", "src\Services\DoctorDay.API\DoctorDay.API.csproj", "{B807A126-0E32-44B3-8660-02F84512362B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,6 +73,18 @@ Global
 		{D88C2696-B2FD-4EE2-BCB9-6762169FC05C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D88C2696-B2FD-4EE2-BCB9-6762169FC05C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D88C2696-B2FD-4EE2-BCB9-6762169FC05C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62188750-9074-4FF0-8689-0ED8B7957051}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62188750-9074-4FF0-8689-0ED8B7957051}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62188750-9074-4FF0-8689-0ED8B7957051}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62188750-9074-4FF0-8689-0ED8B7957051}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2BBD840-8783-4024-99E8-C8C8ED9CC850}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2BBD840-8783-4024-99E8-C8C8ED9CC850}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2BBD840-8783-4024-99E8-C8C8ED9CC850}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2BBD840-8783-4024-99E8-C8C8ED9CC850}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B807A126-0E32-44B3-8660-02F84512362B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B807A126-0E32-44B3-8660-02F84512362B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B807A126-0E32-44B3-8660-02F84512362B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B807A126-0E32-44B3-8660-02F84512362B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,6 +100,9 @@ Global
 		{5AC9BCE3-9F05-4EB7-9142-1688F50B6609} = {141E25AF-C7A0-4325-8F6B-FCDC8FED089F}
 		{D8B36C70-39FD-429F-8E5A-EE654CEA6DCF} = {DEF97E12-59D4-4059-B37E-B975675419FA}
 		{D88C2696-B2FD-4EE2-BCB9-6762169FC05C} = {DEF97E12-59D4-4059-B37E-B975675419FA}
+		{62188750-9074-4FF0-8689-0ED8B7957051} = {141E25AF-C7A0-4325-8F6B-FCDC8FED089F}
+		{C2BBD840-8783-4024-99E8-C8C8ED9CC850} = {DEF97E12-59D4-4059-B37E-B975675419FA}
+		{B807A126-0E32-44B3-8660-02F84512362B} = {DEF97E12-59D4-4059-B37E-B975675419FA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {678418E4-518F-452C-B3DE-0526431A1EBF}

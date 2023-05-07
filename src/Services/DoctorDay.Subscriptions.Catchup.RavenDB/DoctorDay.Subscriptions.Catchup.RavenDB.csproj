@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-DoctorDay.Subscriptions.Catchup.RavenDB-0d4f7543-597b-4229-915d-465595931384</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..\..</DockerfileContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="7.0.1" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Eventuous.EventStore" Version="0.14.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Archivers.Azure\BuildingBlocks.Archivers.Azure.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Projections.RavenDB\BuildingBlocks.Projections.RavenDB.csproj" />
+    <ProjectReference Include="..\DoctorDay.Infrastructure.RavenDB\DoctorDay.Infrastructure.RavenDB.csproj" />
+  </ItemGroup>
+</Project>
