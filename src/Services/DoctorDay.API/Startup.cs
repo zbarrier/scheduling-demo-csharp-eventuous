@@ -1,9 +1,13 @@
-﻿using BuildingBlocks.JsonConverters;
+﻿using System.Text.Json;
+
+using BuildingBlocks.JsonConverters;
 
 using DoctorDay.Application.Commands;
 using DoctorDay.Application.Queries;
 using DoctorDay.Domain.DayAggregate;
 using DoctorDay.Infrastructure.RavenDB;
+
+using EventStore.Client;
 
 using Eventuous;
 using Eventuous.EventStore;
@@ -47,15 +51,25 @@ public class Startup
             options.Converters.Add(new TimeSpanConverter());
             return options;
         });
+        DefaultEventSerializer.SetDefaultSerializer(new DefaultEventSerializer(new JsonSerializerOptions(JsonSerializerDefaults.Web), TypeMap.Instance));
+
+        //Event Mappings
+        DayEvents.MapDayEvents();
 
         //Eventuous
-        services.AddEventStoreClient(Configuration["EventStore:ConnectionString"]!)
-                .AddAggregateStore<EsdbEventStore>()
-                .AddSingleton<IEventSerializer, DefaultEventSerializer>();
+        services.AddSingleton<EventStoreClient>((provider) => {
+                    var settings = EventStoreClientSettings.Create(Configuration["EventStoreDB:ConnectionString"]);
+                    settings.ConnectionName = Configuration["EventStoreDB:ConnectionName"];
+                    settings.DefaultCredentials = new UserCredentials(
+                        Configuration["EventStoreDB:UserCredentials:Username"]!,
+                        Configuration["EventStoreDB:UserCredentials:Password"]!
+                    );
 
-        //Services
-        services.AddCommandService<DayCommandService, Day>();
-        DayEvents.MapDayEvents();
+                    return new EventStoreClient(settings);
+                })
+                .AddAggregateStore<EsdbEventStore>()
+                .AddSingleton<IEventSerializer, DefaultEventSerializer>()
+                .AddCommandService<DayCommandService, Day>();
 
         //RavenDB
         _ = services.AddSingleton<IDocumentStore>((provider) => {

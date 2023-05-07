@@ -33,7 +33,15 @@ namespace DoctorDay.API.OpenAPI.Days
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAvailableSlotsToday()
         {
-            var availableSlots = await _availableSlotsRepository.GetAvailableSlotsOn(DateTimeOffset.UtcNow.Date, default).ConfigureAwait(false);
+            var availableSlots = (await _availableSlotsRepository.GetAvailableSlotsOn(DateTimeOffset.UtcNow.Date, default).ConfigureAwait(false))
+                .Select(x => new
+                {
+                    Id = x.Id.Split('/').Last(),
+                    DayId = x.DayId,
+                    Date = x.Date,
+                    StartTime = x.StartTime,
+                    Duration = x.Duration
+                });
 
             return Ok(availableSlots);
         }
@@ -49,7 +57,15 @@ namespace DoctorDay.API.OpenAPI.Days
                 throw new ArgumentException(nameof(date));
             }
 
-            var availableSlots = await _availableSlotsRepository.GetAvailableSlotsOn(parsedDate, default).ConfigureAwait(false);
+            var availableSlots = (await _availableSlotsRepository.GetAvailableSlotsOn(parsedDate, default).ConfigureAwait(false))
+                .Select(x => new
+                {
+                    Id = x.Id.Split('/').Last(),
+                    DayId = x.DayId,
+                    Date = x.Date,
+                    StartTime = x.StartTime,
+                    Duration = x.Duration
+                });
 
             return Ok(availableSlots);
         }

@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
@@ -21,6 +23,7 @@ using Eventuous.EventStore.Producers;
 using Eventuous.EventStore.Subscriptions;
 using Eventuous.Producers;
 using Eventuous.Subscriptions.Checkpoints;
+using Eventuous.Subscriptions.Filters;
 using Eventuous.Subscriptions.Registrations;
 
 using Raven.Client.Documents;
@@ -52,35 +55,48 @@ public class Program
                     options.Converters.Add(new TimeSpanConverter());
                     return options;
                 });
+                DefaultEventSerializer.SetDefaultSerializer(new DefaultEventSerializer(new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+
+                //Event Mappings
+                DayEvents.MapDayEvents();
 
                 //EventStoreDB
-                _ = services.AddEventStoreClient(configuration["EventStoreDB:ConnectionString"]!)
+                _ = services.AddSingleton<EventStoreClient>((provider) => {
+                                var settings = EventStoreClientSettings.Create(configuration["EventStoreDB:ConnectionString"]);
+                                settings.ConnectionName = configuration["EventStoreDB:ConnectionName"];
+                                settings.DefaultCredentials = new UserCredentials(
+                                    configuration["EventStoreDB:UserCredentials:Username"]!,
+                                    configuration["EventStoreDB:UserCredentials:Password"]!
+                                );
+
+                                return new EventStoreClient(settings);
+                            })
                             .AddAggregateStore<EsdbEventStore>()
                             .AddCommandService<DayCommandService, Day>()
                             .AddSingleton<IEventSerializer, DefaultEventSerializer>();
 
                 //RavenDB
                 _ = services.AddSingleton<IDocumentStore>((provider) =>
-                {
-                    var documentStore = new DocumentStore
                     {
-                        Urls = configuration["RavenDB:Server"]!.Split(',', System.StringSplitOptions.RemoveEmptyEntries),
-                        Database = configuration["RavenDB:Database"],
-                        Conventions =
-                            {
-                                AggressiveCache =
+                        var documentStore = new DocumentStore
+                        {
+                            Urls = configuration["RavenDB:Server"]!.Split(',', System.StringSplitOptions.RemoveEmptyEntries),
+                            Database = configuration["RavenDB:Database"],
+                            Conventions =
                                 {
-                                    Duration = TimeSpan.FromDays(1),
-                                    Mode = Raven.Client.Http.AggressiveCacheMode.TrackChanges
+                                    AggressiveCache =
+                                    {
+                                        Duration = TimeSpan.FromDays(1),
+                                        Mode = Raven.Client.Http.AggressiveCacheMode.TrackChanges
+                                    }
                                 }
-                            }
-                    }.Initialize();
+                        }.Initialize();
 
-                    _ = documentStore.AggressivelyCache();
+                        _ = documentStore.AggressivelyCache();
 
-                    return documentStore;
-                })
-                    .AddSingleton<ICheckpointStore>((provider) =>
+                        return documentStore;
+                    })
+                    .AddSingleton<RavenCheckpointStore>((provider) =>
                         new RavenCheckpointStore(
                             provider.GetRequiredService<ILogger<RavenCheckpointStore>>(),
                             provider.GetRequiredService<IDocumentStore>(),
@@ -97,12 +113,19 @@ public class Program
                 //Subscriptions
                 services.AddSubscription<AllStreamSubscription, AllStreamSubscriptionOptions>(
                     "RavenDayProjections",
-                    builder => builder
-                        .UseCheckpointStore<RavenCheckpointStore>()
-                        .AddEventHandler<AvailableSlotsProjection>()
-                        .AddEventHandler<DayArchiverProcessManager>()
-                        .AddEventHandler<OverbookingProcessManager>()
-                        .WithPartitioningByStream(1)
+                    builder =>
+                    {
+                        builder.ConfigureOptions(new AllStreamSubscriptionOptions()
+                        {
+                            EventFilter = StreamFilter.Prefix("Day-", "calendar_events"),
+
+                        });
+
+                        builder.UseCheckpointStore<RavenCheckpointStore>()
+                               .AddEventHandler<AvailableSlotsProjection>()
+                               .AddEventHandler<DayArchiverProcessManager>()
+                               .AddEventHandler<OverbookingProcessManager>();
+                    }
                 );
 
                 //Producers

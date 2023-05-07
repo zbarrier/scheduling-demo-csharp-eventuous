@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "doctorday.api": "StartDebugging",
+        "doctorday.subscriptions.catchup.ravendb": "StartDebugging",
+        "doctorday.subscriptions.persistent.eventstoredb": "StartDebugging"
+      }
+    }
+  }
+}

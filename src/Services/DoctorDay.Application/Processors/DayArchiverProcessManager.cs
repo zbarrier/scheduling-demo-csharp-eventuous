@@ -41,9 +41,11 @@ public sealed class DayArchiverProcessManager : Eventuous.Subscriptions.EventHan
         _serializer = serializer;
         _eventStore = eventStore;
         _coldStorage = coldStorage;
-    }
 
-    public string DiagosticName => nameof(DayArchiverProcessManager);
+        On<DayEvents.DayScheduled_V1>(HandleEvent);
+        On<DayEvents.CalendarDayStarted_V1>(HandleEvent);
+        On<DayEvents.DayScheduleArchived_V1>(HandleEvent);
+    }
 
     async ValueTask HandleEvent(MessageConsumeContext<DayEvents.DayScheduled_V1> context)
         => await _repository.Add(new ReadModels.ArchivableDay(context.Stream.GetId(), context.Message.Date), context.CancellationToken).ConfigureAwait(false);
@@ -68,7 +70,7 @@ public sealed class DayArchiverProcessManager : Eventuous.Subscriptions.EventHan
             cancellationToken: context.CancellationToken).ConfigureAwait(false);
     }
 
-    async Task HandleEvent(MessageConsumeContext<DayEvents.DayScheduleArchived_V1> context)
+    async ValueTask HandleEvent(MessageConsumeContext<DayEvents.DayScheduleArchived_V1> context)
     {
         var streamName = context.Stream;
         var eventsToArchive = new List<StreamEvent>();

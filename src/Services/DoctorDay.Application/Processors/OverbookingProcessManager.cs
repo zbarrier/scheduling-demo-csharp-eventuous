@@ -25,23 +25,18 @@ public sealed class OverbookingProcessManager : Eventuous.Subscriptions.EventHan
     readonly OverbookingProcessManagerOptions _options;
     readonly IBookedSlotsRepository _repository;
     readonly IEventProducer _producer;
-    readonly TypeMapper _typeMapper;
 
     public OverbookingProcessManager(IOptions<OverbookingProcessManagerOptions> options,
         IBookedSlotsRepository repository,
-        IEventProducer producer,
-        TypeMapper typeMapper)
+        IEventProducer producer)
     {
         _options = options.Value;
         _repository = repository;
         _producer = producer;
-        _typeMapper = typeMapper;
 
         On<DayEvents.SlotScheduled_V1>(HandleEvent);
         On<DayEvents.SlotBooked_V1>(HandleEvent);
     }
-
-    public string DiagosticName => nameof(OverbookingProcessManager);
 
     async ValueTask HandleEvent(MessageConsumeContext<DayEvents.SlotScheduled_V1> context)
     {
