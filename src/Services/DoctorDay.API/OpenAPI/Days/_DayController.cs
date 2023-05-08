@@ -112,7 +112,9 @@ namespace DoctorDay.API.OpenAPI.Days
 
             var result = await _dayService.Handle(command, default);
 
-            return Created($"/api/v1/slots/{command.Date.ToString("yyyy-MM-dd")}/available", result.State);
+            return result.Success
+                ? Created($"/api/v1/slots/{command.Date.ToString("yyyy-MM-dd")}/available", result.State)
+                : ToErrorResult(result as ErrorResult<DayState>);
         }
 
         [HttpPut]
@@ -126,7 +128,9 @@ namespace DoctorDay.API.OpenAPI.Days
 
             var result = await _dayService.Handle(command, default);
 
-            return NoContent();
+            return result.Success
+                ? NoContent()
+                : ToErrorResult(result as ErrorResult<DayState>);
         }
 
         [HttpPut]
@@ -140,7 +144,20 @@ namespace DoctorDay.API.OpenAPI.Days
 
             var result = await _dayService.Handle(command, default);
 
-            return NoContent();
+            return result.Success
+                ? NoContent()
+                : ToErrorResult(result as ErrorResult<DayState>);
+        }
+
+        IActionResult ToErrorResult<TState>(ErrorResult<TState>? errorResult) where TState : State<TState>, new()
+        {
+            return errorResult?.Exception switch
+            {
+                DayException e => Problem(e.Message, null, e.HttpStatusCode, null, null),
+                AggregateNotFoundException _ => NotFound(),
+                DomainException e => e.Message.EndsWith("already exists") ? Conflict() : NotFound(),
+                _ => Problem("Unknown error", null, 500, null, null)
+            };
         }
     }
 }
