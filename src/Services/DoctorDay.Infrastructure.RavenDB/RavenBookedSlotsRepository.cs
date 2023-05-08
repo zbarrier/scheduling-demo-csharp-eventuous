@@ -98,6 +98,24 @@ namespace DoctorDay.Infrastructure
             return slot;
         }
 
+        public async Task DeleteSlot(Guid slotId, ulong position, CancellationToken cancellationToken)
+        {
+            using var session = _documentStore.OpenAsyncSession();
+
+            var slot = await session
+                .LoadAsync<ReadModels.AvailableSlot>(GetFullId(slotId), cancellationToken)
+                .ConfigureAwait(false);
+
+            bool eventHasNotBeenHandled = slot is not null && position > slot.Position;
+
+            if (eventHasNotBeenHandled)
+            {
+                session.Delete(slot);
+
+                await session.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
+
         string GetFullId(Guid shortId) => $"{_prefix}/{shortId}";
         string GetFullId(string shortId) => $"{_prefix}/{shortId}";
     }

@@ -35,7 +35,7 @@ public sealed class RavenAvailableSlotsRepository : IAvailableSlotsRepository
         //an update but that should be fine.
         var archivableDays = await session
             .Query<ReadModels.AvailableSlot>()
-            .Where(x => x.Date == date.Date.ToString("dd-MM-yyyy"))
+            .Where(x => x.Date == date.Date.ToString("yyyy-MM-dd"))
             .Where(x => x.IsBooked == false)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);

@@ -9,44 +9,13 @@ public sealed record DayState : State<DayState>
 {
     public DayState()
     {
-        On<V1.DayScheduled>((state, evt) => state with 
-        {
-            Date = evt.Date
-        });
-
-        On<V1.SlotScheduled>((state, evt) => state with
-        {
-            Slots = Slots.Add(new Slot(evt.SlotId, evt.SlotStartTime, evt.SlotDuration))
-        });
-
-        On<V1.SlotBooked>((state, evt) => state with
-        {
-            Slots = Slots.Replace(
-                Slots.Single(s => s.Id == evt.SlotId),
-                Slots.Single(s => s.Id == evt.SlotId) with { Booked = true })
-        });
-
-        On<V1.SlotBookingCancelled>((state, evt) => state with
-        {
-            Slots = Slots.Replace(
-                Slots.Single(s => s.Id == evt.SlotId),
-                Slots.Single(s => s.Id == evt.SlotId) with { Booked = false })
-        });
-
-        On<V1.SlotScheduleCancelled>((state, evt) => state with
-        {
-            Slots = Slots.Remove(Slots.Single(s => s.Id == evt.SlotId))
-        });
-
-        On<V1.DayScheduleCancelled>((state, evt) => state with
-        {
-            Cancelled = true
-        });
-
-        On<V1.DayScheduleArchived>((state, evt) => state with
-        {
-            Archived = true
-        });
+        On<V1.DayScheduled>(Handle);
+        On<V1.SlotScheduled>(Handle);
+        On<V1.SlotBooked>(Handle);
+        On<V1.SlotBookingCancelled>(Handle);
+        On<V1.SlotScheduleCancelled>(Handle);
+        On<V1.DayScheduleCancelled>(Handle);
+        On<V1.DayScheduleArchived>(Handle);
     }
 
     internal DateTimeOffset Date { get; init; }
@@ -71,4 +40,44 @@ public sealed record DayState : State<DayState>
     internal bool SlotNotScheduled(SlotId slotId) => !SlotScheduled(slotId);
     internal bool SlotBooked(SlotId slotId) => Slots.FirstOrDefault(slot => slot.Id == slotId)?.Booked ?? false;
     internal bool SlotNotBooked(SlotId slotId) => !SlotBooked(slotId);
+
+    static DayState Handle(DayState state, V1.DayScheduled e)
+        => state with
+        {
+            Date = e.Date
+        };
+    static DayState Handle(DayState state, V1.SlotScheduled e)
+        => state with
+        {
+            Slots = state.Slots.Add(new Slot(e.SlotId, e.SlotStartTime, e.SlotDuration))
+        };
+    static DayState Handle(DayState state, V1.SlotBooked e)
+        => state with
+        {
+            Slots = state.Slots.Replace(
+                state.Slots.Single(s => s.Id == e.SlotId),
+                state.Slots.Single(s => s.Id == e.SlotId) with { Booked = true })
+        };
+    static DayState Handle(DayState state, V1.SlotBookingCancelled e)
+        => state with
+        {
+            Slots = state.Slots.Replace(
+                state.Slots.Single(s => s.Id == e.SlotId),
+                state.Slots.Single(s => s.Id == e.SlotId) with { Booked = false })
+        };
+    static DayState Handle(DayState state, V1.SlotScheduleCancelled e)
+        => state with
+        {
+            Slots = state.Slots.Remove(state.Slots.Single(s => s.Id == e.SlotId))
+        };
+    static DayState Handle(DayState state, V1.DayScheduleCancelled e)
+        => state with
+        {
+            Cancelled = true
+        };
+    static DayState Handle(DayState state, V1.DayScheduleArchived e)
+        => state with
+        {
+            Archived = true
+        };
 }

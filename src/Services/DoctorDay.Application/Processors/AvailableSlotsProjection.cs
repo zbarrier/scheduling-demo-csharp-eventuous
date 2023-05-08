@@ -24,7 +24,7 @@ public sealed class AvailableSlotsProjection : IEventHandler
                     new ReadModels.AvailableSlot(
                         evt.SlotId.ToString(),
                         context.Stream.GetId(),
-                        evt.SlotStartTime.ToString("dd-MM-yyyy"),
+                        evt.SlotStartTime.ToString("yyyy-MM-dd"),
                         evt.SlotStartTime.ToString("h:mm tt"),
                         evt.SlotDuration)
                     {

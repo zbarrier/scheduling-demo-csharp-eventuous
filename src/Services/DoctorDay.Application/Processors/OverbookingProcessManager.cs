@@ -34,6 +34,8 @@ public sealed class OverbookingProcessManager : Eventuous.Subscriptions.EventHan
 
         On<V1.SlotScheduled>(HandleEvent);
         On<V1.SlotBooked>(HandleEvent);
+        On<V1.SlotBookingCancelled>(HandleEvent);
+        On<V1.SlotScheduleCancelled>(HandleEvent);
     }
 
     async ValueTask HandleEvent(MessageConsumeContext<V1.SlotScheduled> context)
@@ -71,4 +73,10 @@ public sealed class OverbookingProcessManager : Eventuous.Subscriptions.EventHan
             await _producer.Produce<DayCommands.CancelSlotBooking>(queueName, cancelSlotBooking, metadata, cancellationToken: context.CancellationToken);
         }
     }
+
+    async ValueTask HandleEvent(MessageConsumeContext<V1.SlotBookingCancelled> context)
+        => await _repository.MarkSlotAsAvailable(context.Message.SlotId, context.GlobalPosition, context.CancellationToken).ConfigureAwait(false);
+
+    async ValueTask HandleEvent(MessageConsumeContext<V1.SlotScheduleCancelled> context)
+        => await _repository.DeleteSlot(context.Message.SlotId, context.GlobalPosition, context.CancellationToken).ConfigureAwait(false);
 }

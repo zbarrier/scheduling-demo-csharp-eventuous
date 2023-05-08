@@ -112,7 +112,7 @@ namespace DoctorDay.API.OpenAPI.Days
 
             var result = await _dayService.Handle(command, default);
 
-            return Created($"/api/v1/slots/{command.Date}/available", result.State);
+            return Created($"/api/v1/slots/{command.Date.ToString("yyyy-MM-dd")}/available", result.State);
         }
 
         [HttpPut]
