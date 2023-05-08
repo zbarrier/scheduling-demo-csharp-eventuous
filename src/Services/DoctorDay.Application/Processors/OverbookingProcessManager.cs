@@ -1,16 +1,14 @@
 ﻿using DoctorDay.Application.Commands;
-using System.Threading;
-
 using DoctorDay.Application.Queries;
 using DoctorDay.Domain;
-using DoctorDay.Domain.DayAggregate;
 
+using Eventuous;
 using Eventuous.Producers;
-using Eventuous.Subscriptions;
 using Eventuous.Subscriptions.Context;
 
 using Microsoft.Extensions.Options;
-using Eventuous;
+
+using static DoctorDay.Domain.DayAggregate.DayEvents;
 
 namespace DoctorDay.Application.Processors;
 
@@ -34,11 +32,11 @@ public sealed class OverbookingProcessManager : Eventuous.Subscriptions.EventHan
         _repository = repository;
         _producer = producer;
 
-        On<DayEvents.SlotScheduled_V1>(HandleEvent);
-        On<DayEvents.SlotBooked_V1>(HandleEvent);
+        On<V1.SlotScheduled>(HandleEvent);
+        On<V1.SlotBooked>(HandleEvent);
     }
 
-    async ValueTask HandleEvent(MessageConsumeContext<DayEvents.SlotScheduled_V1> context)
+    async ValueTask HandleEvent(MessageConsumeContext<V1.SlotScheduled> context)
     {
         var evt = context.Message;
 
@@ -51,7 +49,7 @@ public sealed class OverbookingProcessManager : Eventuous.Subscriptions.EventHan
             ).ConfigureAwait(false);
     }
 
-    async ValueTask HandleEvent(MessageConsumeContext<DayEvents.SlotBooked_V1> context)
+    async ValueTask HandleEvent(MessageConsumeContext<V1.SlotBooked> context)
     {
         var evt = context.Message;
 

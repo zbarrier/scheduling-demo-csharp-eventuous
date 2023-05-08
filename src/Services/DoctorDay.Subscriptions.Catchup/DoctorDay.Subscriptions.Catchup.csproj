@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dotnet-DoctorDay.Subscriptions.Persistent.EventStoreDB-b5e84374-602a-40e5-8efa-a9d5803f3fb2</UserSecretsId>
+    <UserSecretsId>dotnet-DoctorDay.Subscriptions.Catchup-b76c2382-a574-4270-a42a-b048a55aed89</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..</DockerfileContext>
   </PropertyGroup>
@@ -17,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BuildingBlocks\JsonConverters\BuildingBlocks.JsonConverters.csproj" />
-    <ProjectReference Include="..\DoctorDay.Application\DoctorDay.Application.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Archivers.Azure\BuildingBlocks.Archivers.Azure.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Projections.RavenDB\BuildingBlocks.Projections.RavenDB.csproj" />
+    <ProjectReference Include="..\DoctorDay.Infrastructure.RavenDB\DoctorDay.Infrastructure.RavenDB.csproj" />
   </ItemGroup>
 </Project>

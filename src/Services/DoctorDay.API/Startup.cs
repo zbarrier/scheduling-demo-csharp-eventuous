@@ -47,50 +47,50 @@ public class Startup
 
         //Serialization
         _ = services.AddSingleton<System.Text.Json.JsonSerializerOptions>((provider) => {
-            var options = new System.Text.Json.JsonSerializerOptions();
-            options.Converters.Add(new TimeSpanConverter());
-            return options;
-        });
+                        var options = new System.Text.Json.JsonSerializerOptions();
+                        options.Converters.Add(new TimeSpanConverter());
+                        return options;
+                    });
         DefaultEventSerializer.SetDefaultSerializer(new DefaultEventSerializer(new JsonSerializerOptions(JsonSerializerDefaults.Web), TypeMap.Instance));
 
         //Event Mappings
-        DayEvents.MapDayEvents();
+        TypeMap.RegisterKnownEventTypes();
 
         //Eventuous
-        services.AddSingleton<EventStoreClient>((provider) => {
-                    var settings = EventStoreClientSettings.Create(Configuration["EventStoreDB:ConnectionString"]);
-                    settings.ConnectionName = Configuration["EventStoreDB:ConnectionName"];
-                    settings.DefaultCredentials = new UserCredentials(
-                        Configuration["EventStoreDB:UserCredentials:Username"]!,
-                        Configuration["EventStoreDB:UserCredentials:Password"]!
-                    );
+        _ = services.AddSingleton<EventStoreClient>((provider) => {
+                        var settings = EventStoreClientSettings.Create(Configuration["EventStoreDB:ConnectionString"]);
+                        settings.ConnectionName = Configuration["EventStoreDB:ConnectionName"];
+                        settings.DefaultCredentials = new UserCredentials(
+                            Configuration["EventStoreDB:UserCredentials:Username"]!,
+                            Configuration["EventStoreDB:UserCredentials:Password"]!
+                        );
 
-                    return new EventStoreClient(settings);
-                })
-                .AddAggregateStore<EsdbEventStore>()
-                .AddSingleton<IEventSerializer, DefaultEventSerializer>()
-                .AddCommandService<DayCommandService, Day>();
+                        return new EventStoreClient(settings);
+                    })
+                    .AddAggregateStore<EsdbEventStore>()
+                    .AddSingleton<IEventSerializer, DefaultEventSerializer>()
+                    .AddCommandService<DayCommandService, Day>();
 
         //RavenDB
         _ = services.AddSingleton<IDocumentStore>((provider) => {
-            var documentStore = new DocumentStore
-            {
-                Urls = Configuration["RavenDB:Server"].Split(',', System.StringSplitOptions.RemoveEmptyEntries),
-                Database = Configuration["RavenDB:Database"],
-                Conventions = {
-                    AggressiveCache = {
-                        Duration = TimeSpan.FromDays(1),
-                        //Need to track, collections will be modified in the catch-up subscription
-                        Mode = Raven.Client.Http.AggressiveCacheMode.TrackChanges
-                    }
-                }
-            }.Initialize();
+                        var documentStore = new DocumentStore
+                        {
+                            Urls = Configuration["RavenDB:Server"].Split(',', System.StringSplitOptions.RemoveEmptyEntries),
+                            Database = Configuration["RavenDB:Database"],
+                            Conventions = {
+                                AggressiveCache = {
+                                    Duration = TimeSpan.FromDays(1),
+                                    //Need to track, collections will be modified in the catch-up subscription
+                                    Mode = Raven.Client.Http.AggressiveCacheMode.TrackChanges
+                                }
+                            }
+                        }.Initialize();
 
-            documentStore.AggressivelyCache();
+                        documentStore.AggressivelyCache();
 
-            return documentStore;
-        })
-        .AddSingleton<IAvailableSlotsRepository, RavenAvailableSlotsRepository>();
+                        return documentStore;
+                    })
+                    .AddSingleton<IAvailableSlotsRepository, RavenAvailableSlotsRepository>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

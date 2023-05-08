@@ -14,9 +14,7 @@ using Eventuous;
 using Eventuous.EventStore;
 using Eventuous.EventStore.Subscriptions;
 
-using Microsoft.Extensions.Options;
-
-namespace DoctorDay.Subscriptions.Persistent.EventStoreDB;
+namespace DoctorDay.Subscriptions.Persistent;
 
 public class Program
 {
@@ -35,14 +33,14 @@ public class Program
 
                 //Serialization
                 _ = services.AddSingleton<System.Text.Json.JsonSerializerOptions>((provider) => {
-                    var options = new System.Text.Json.JsonSerializerOptions();
-                    options.Converters.Add(new TimeSpanConverter());
-                    return options;
-                });
+                                var options = new System.Text.Json.JsonSerializerOptions();
+                                options.Converters.Add(new TimeSpanConverter());
+                                return options;
+                            });
                 DefaultEventSerializer.SetDefaultSerializer(new DefaultEventSerializer(new JsonSerializerOptions(JsonSerializerDefaults.Web)));
 
                 //Event Mappings
-                DayEvents.MapDayEvents();
+                TypeMap.RegisterKnownEventTypes();
 
                 //EventStoreDB
                 _ = services.AddSingleton<EventStoreClient>((provider) => {
@@ -61,11 +59,11 @@ public class Program
 
                 //Subscriptions
                 services.AddSubscription<StreamPersistentSubscription, StreamPersistentSubscriptionOptions>(
-                    "DayCommandsAsyncHandler",
-                    builder => builder
-                        .Configure(x => x.StreamName = DayCommandsAsyncHandler.Stream)
-                        .AddEventHandler<DayCommandsAsyncHandler>()
-                );
+                            "DayCommandsAsyncHandler",
+                            builder => builder
+                                .Configure(x => x.StreamName = DayCommandsAsyncHandler.Stream)
+                                .AddEventHandler<DayCommandsAsyncHandler>()
+                        );
             })
             .ConfigureContainer<ContainerBuilder>((context, builder) => {
 

@@ -61,21 +61,21 @@ services:
       - eventstore.db
       - raven.db
 
-  doctorday.subscriptions.catchup.ravendb:
-    image: ${DOCKER_REGISTRY-}doctorday.subscriptions.catchup.ravendb
+  doctorday.subscriptions.catchup:
+    image: ${DOCKER_REGISTRY-}doctorday.subscriptions.catchup
     build:
       context: .
-      dockerfile: src/Services/DoctorDay.Subscriptions.Catchup.RavenDB/Dockerfile
+      dockerfile: src/Services/DoctorDay.Subscriptions.Catchup/Dockerfile
     depends_on:
       - eventstore.db
       - raven.db
       - azurite
 
-  doctorday.subscriptions.persistent.eventstoredb:
-    image: ${DOCKER_REGISTRY-}doctorday.subscriptions.persistent.eventstoredb
+  doctorday.subscriptions.persistent:
+    image: ${DOCKER_REGISTRY-}doctorday.subscriptions.persistent
     build:
       context: .
-      dockerfile: src/Services/DoctorDay.Subscriptions.Persistent.EventStoreDB/Dockerfile
+      dockerfile: src/Services/DoctorDay.Subscriptions.Persistent/Dockerfile
     depends_on:
       - eventstore.db
 

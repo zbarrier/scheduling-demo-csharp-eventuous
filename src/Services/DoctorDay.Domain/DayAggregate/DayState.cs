@@ -1,48 +1,49 @@
 ﻿using System.Collections.Immutable;
+
 using Eventuous;
 
-using static System.Reflection.Metadata.BlobBuilder;
+using static DoctorDay.Domain.DayAggregate.DayEvents;
 
 namespace DoctorDay.Domain.DayAggregate;
 public sealed record DayState : State<DayState>
 {
     public DayState()
     {
-        On<DayEvents.DayScheduled_V1>((state, evt) => state with 
+        On<V1.DayScheduled>((state, evt) => state with 
         {
             Date = evt.Date
         });
 
-        On<DayEvents.SlotScheduled_V1>((state, evt) => state with
+        On<V1.SlotScheduled>((state, evt) => state with
         {
             Slots = Slots.Add(new Slot(evt.SlotId, evt.SlotStartTime, evt.SlotDuration))
         });
 
-        On<DayEvents.SlotBooked_V1>((state, evt) => state with
+        On<V1.SlotBooked>((state, evt) => state with
         {
             Slots = Slots.Replace(
                 Slots.Single(s => s.Id == evt.SlotId),
                 Slots.Single(s => s.Id == evt.SlotId) with { Booked = true })
         });
 
-        On<DayEvents.SlotBookingCancelled_V1>((state, evt) => state with
+        On<V1.SlotBookingCancelled>((state, evt) => state with
         {
             Slots = Slots.Replace(
                 Slots.Single(s => s.Id == evt.SlotId),
                 Slots.Single(s => s.Id == evt.SlotId) with { Booked = false })
         });
 
-        On<DayEvents.SlotScheduleCancelled_V1>((state, evt) => state with
+        On<V1.SlotScheduleCancelled>((state, evt) => state with
         {
             Slots = Slots.Remove(Slots.Single(s => s.Id == evt.SlotId))
         });
 
-        On<DayEvents.DayScheduleCancelled_V1>((state, evt) => state with
+        On<V1.DayScheduleCancelled>((state, evt) => state with
         {
             Cancelled = true
         });
 
-        On<DayEvents.DayScheduleArchived_V1>((state, evt) => state with
+        On<V1.DayScheduleArchived>((state, evt) => state with
         {
             Archived = true
         });

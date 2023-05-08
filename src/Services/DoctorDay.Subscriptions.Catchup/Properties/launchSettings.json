@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "DoctorDay.Subscriptions.Catchup.RavenDB": {
+    "DoctorDay.Subscriptions.Catchup": {
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"

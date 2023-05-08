@@ -3,13 +3,14 @@
 using DoctorDay.Application.Commands;
 using DoctorDay.Application.Queries;
 using DoctorDay.Domain;
-using DoctorDay.Domain.DayAggregate;
 
 using Eventuous;
 using Eventuous.Producers;
 using Eventuous.Subscriptions.Context;
 
 using Microsoft.Extensions.Options;
+
+using static DoctorDay.Domain.DayAggregate.DayEvents;
 
 namespace DoctorDay.Application.Processors;
 
@@ -42,15 +43,15 @@ public sealed class DayArchiverProcessManager : Eventuous.Subscriptions.EventHan
         _eventStore = eventStore;
         _coldStorage = coldStorage;
 
-        On<DayEvents.DayScheduled_V1>(HandleEvent);
-        On<DayEvents.CalendarDayStarted_V1>(HandleEvent);
-        On<DayEvents.DayScheduleArchived_V1>(HandleEvent);
+        On<V1.DayScheduled>(HandleEvent);
+        On<V1.CalendarDayStarted>(HandleEvent);
+        On<V1.DayScheduleArchived>(HandleEvent);
     }
 
-    async ValueTask HandleEvent(MessageConsumeContext<DayEvents.DayScheduled_V1> context)
+    async ValueTask HandleEvent(MessageConsumeContext<V1.DayScheduled> context)
         => await _repository.Add(new ReadModels.ArchivableDay(context.Stream.GetId(), context.Message.Date), context.CancellationToken).ConfigureAwait(false);
 
-    async ValueTask HandleEvent(MessageConsumeContext<DayEvents.CalendarDayStarted_V1> context)
+    async ValueTask HandleEvent(MessageConsumeContext<V1.CalendarDayStarted> context)
     {
         var archivableDays = await _repository
             .FindAll(context.Message.Date.Add(_options.Threshold), context.CancellationToken)
@@ -70,7 +71,7 @@ public sealed class DayArchiverProcessManager : Eventuous.Subscriptions.EventHan
             cancellationToken: context.CancellationToken).ConfigureAwait(false);
     }
 
-    async ValueTask HandleEvent(MessageConsumeContext<DayEvents.DayScheduleArchived_V1> context)
+    async ValueTask HandleEvent(MessageConsumeContext<V1.DayScheduleArchived> context)
     {
         var streamName = context.Stream;
         var eventsToArchive = new List<StreamEvent>();

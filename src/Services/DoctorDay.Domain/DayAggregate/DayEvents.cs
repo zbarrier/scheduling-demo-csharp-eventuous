@@ -3,30 +3,30 @@
 namespace DoctorDay.Domain.DayAggregate;
 public static class DayEvents
 {
-    [EventType(nameof(CalendarDayStarted_V1))]
-    public sealed record CalendarDayStarted_V1(DateTimeOffset Date);
+    public static class V1
+    {
+        [EventType("V1.CalendarDayStarted")]
+        public sealed record CalendarDayStarted(DateTimeOffset Date);
 
-    [EventType(nameof(DayScheduled_V1))]
-    public sealed record DayScheduled_V1(Guid DoctorId, DateTimeOffset Date);
+        [EventType("V1.DayScheduled")]
+        public sealed record DayScheduled(Guid DoctorId, DateTimeOffset Date);
 
-    [EventType(nameof(SlotScheduled_V1))]
-    public sealed record SlotScheduled_V1(Guid SlotId, DateTimeOffset SlotStartTime, TimeSpan SlotDuration);
+        [EventType("V1.SlotScheduled")]
+        public sealed record SlotScheduled(Guid SlotId, DateTimeOffset SlotStartTime, TimeSpan SlotDuration);
 
-    [EventType(nameof(SlotBooked_V1))]
-    public sealed record SlotBooked_V1(Guid SlotId, string PatientId);
+        [EventType("V1.SlotBooked")]
+        public sealed record SlotBooked(Guid SlotId, string PatientId);
 
-    [EventType(nameof(SlotBookingCancelled_V1))]
-    public sealed record SlotBookingCancelled_V1(Guid SlotId, string Reason);
+        [EventType("V1.SlotBookingCancelled")]
+        public sealed record SlotBookingCancelled(Guid SlotId, string Reason);
 
-    [EventType(nameof(SlotScheduleCancelled_V1))]
-    public sealed record SlotScheduleCancelled_V1(Guid SlotId);
+        [EventType("V1.SlotScheduleCancelled")]
+        public sealed record SlotScheduleCancelled(Guid SlotId);
 
-    [EventType(nameof(DayScheduleCancelled_V1))]
-    public sealed record DayScheduleCancelled_V1();
+        [EventType("V1.DayScheduleCancelled")]
+        public sealed record DayScheduleCancelled();
 
-    [EventType(nameof(DayScheduleArchived_V1))]
-    public sealed record DayScheduleArchived_V1();
-
-    public static void MapDayEvents()
-        => TypeMap.RegisterKnownEventTypes();
+        [EventType("V1.DayScheduleArchived")]
+        public sealed record DayScheduleArchived();
+    }
 }

@@ -85,7 +85,7 @@ namespace DoctorDay.API.OpenAPI.Days
             var appendEventsResult = await _eventStore.AppendEvents(
                 new StreamName("calendar_events"),
                 ExpectedStreamVersion.Any,
-                new List<StreamEvent>() { ToStreamEvent(new DayEvents.CalendarDayStarted_V1(parsedDate)) },
+                new List<StreamEvent>() { ToStreamEvent(new DayEvents.V1.CalendarDayStarted(parsedDate)) },
                 default
             ).ConfigureAwait(false);
 

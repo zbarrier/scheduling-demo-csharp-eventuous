@@ -1,5 +1,7 @@
 ﻿using Eventuous;
 
+using static DoctorDay.Domain.DayAggregate.DayEvents;
+
 namespace DoctorDay.Domain.DayAggregate;
 public sealed class Day : Aggregate<DayState>
 {
@@ -13,11 +15,11 @@ public sealed class Day : Aggregate<DayState>
         EnsureDayNotArchived();
         EnsureDayNotCancelled();
 
-        _ = Apply(new DayEvents.DayScheduled_V1(doctorId, date));
+        _ = Apply(new V1.DayScheduled(doctorId, date));
 
         foreach (var slotToSchedule in slotsToSchedule)
         {
-            _ = Apply(new DayEvents.SlotScheduled_V1(idGenerator(), slotToSchedule.StartTime, slotToSchedule.Duration));
+            _ = Apply(new V1.SlotScheduled(idGenerator(), slotToSchedule.StartTime, slotToSchedule.Duration));
         }
     }
 
@@ -32,7 +34,7 @@ public sealed class Day : Aggregate<DayState>
         EnsureDayNotFull();
         EnsureSlotDoesNotOverlapWithExistingSlots(startTime, duration);
 
-        _ = Apply(new DayEvents.SlotScheduled_V1(idGenerator(), startTime, duration));
+        _ = Apply(new V1.SlotScheduled(idGenerator(), startTime, duration));
     }
 
     public void BookSlot(SlotId slotId, PatientId patientId)
@@ -44,7 +46,7 @@ public sealed class Day : Aggregate<DayState>
         EnsureSlotScheduled(slotId);
         EnsureSlotNotBooked(slotId);
 
-        _ = Apply(new DayEvents.SlotBooked_V1(slotId, patientId));
+        _ = Apply(new V1.SlotBooked(slotId, patientId));
     }
 
     public void CancelSlotBooking(SlotId slotId, string reason)
@@ -56,7 +58,7 @@ public sealed class Day : Aggregate<DayState>
         EnsureSlotScheduled(slotId);
         EnsureSlotBooked(slotId);
 
-        _ = Apply(new DayEvents.SlotBookingCancelled_V1(slotId, reason));
+        _ = Apply(new V1.SlotBookingCancelled(slotId, reason));
     }
 
     public void Cancel()
@@ -67,15 +69,15 @@ public sealed class Day : Aggregate<DayState>
 
         foreach (var bookedSlot in State.BookedSlots)
         {
-            _ = Apply(new DayEvents.SlotBookingCancelled_V1(bookedSlot.Id, "Day cancelled."));
+            _ = Apply(new V1.SlotBookingCancelled(bookedSlot.Id, "Day cancelled."));
         }
             
         foreach (var slot in State.AllSlots)
         {
-            _ = Apply(new DayEvents.SlotScheduleCancelled_V1(slot.Id));
+            _ = Apply(new V1.SlotScheduleCancelled(slot.Id));
         }
            
-        _ = Apply(new DayEvents.DayScheduleCancelled_V1());
+        _ = Apply(new V1.DayScheduleCancelled());
     }
 
     public void Archive()
@@ -83,7 +85,7 @@ public sealed class Day : Aggregate<DayState>
         EnsureDayScheduled();
         EnsureDayNotArchived();
 
-        _ = Apply(new DayEvents.DayScheduleArchived_V1());
+        _ = Apply(new V1.DayScheduleArchived());
     }
 
 
