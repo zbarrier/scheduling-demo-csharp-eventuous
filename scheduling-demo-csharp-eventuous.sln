@@ -39,9 +39,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DoctorDay.API", "src\Servic
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{EE68E023-7E07-4849-848E-5EC24017D90D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorDay.Subscriptions.Catchup", "src\Services\DoctorDay.Subscriptions.Catchup\DoctorDay.Subscriptions.Catchup.csproj", "{B86A6A12-4842-4D6E-9752-23C5CF214A75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DoctorDay.Subscriptions.Catchup", "src\Services\DoctorDay.Subscriptions.Catchup\DoctorDay.Subscriptions.Catchup.csproj", "{B86A6A12-4842-4D6E-9752-23C5CF214A75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorDay.Subscriptions.Persistent", "src\Services\DoctorDay.Subscriptions.Persistent\DoctorDay.Subscriptions.Persistent.csproj", "{31172AA5-5F7A-4B0D-BB34-E05762AABC7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DoctorDay.Subscriptions.Persistent", "src\Services\DoctorDay.Subscriptions.Persistent\DoctorDay.Subscriptions.Persistent.csproj", "{31172AA5-5F7A-4B0D-BB34-E05762AABC7E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{F3A545A5-3945-4DD1-BD50-95B72C30B5D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eventuous.TestHelpers", "test\Eventuous.TestHelpers\Eventuous.TestHelpers.csproj", "{B5CA5F1A-932D-4DA1-AE29-2BFB647BE777}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorDay.Domain.Tests", "test\Services\DoctorDay.Domain.Tests\DoctorDay.Domain.Tests.csproj", "{67233C4B-2472-4EC6-A82F-FF7839B84616}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +103,14 @@ Global
 		{31172AA5-5F7A-4B0D-BB34-E05762AABC7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31172AA5-5F7A-4B0D-BB34-E05762AABC7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31172AA5-5F7A-4B0D-BB34-E05762AABC7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5CA5F1A-932D-4DA1-AE29-2BFB647BE777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5CA5F1A-932D-4DA1-AE29-2BFB647BE777}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5CA5F1A-932D-4DA1-AE29-2BFB647BE777}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5CA5F1A-932D-4DA1-AE29-2BFB647BE777}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67233C4B-2472-4EC6-A82F-FF7839B84616}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67233C4B-2472-4EC6-A82F-FF7839B84616}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67233C4B-2472-4EC6-A82F-FF7839B84616}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67233C4B-2472-4EC6-A82F-FF7839B84616}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -116,6 +130,9 @@ Global
 		{B807A126-0E32-44B3-8660-02F84512362B} = {DEF97E12-59D4-4059-B37E-B975675419FA}
 		{B86A6A12-4842-4D6E-9752-23C5CF214A75} = {DEF97E12-59D4-4059-B37E-B975675419FA}
 		{31172AA5-5F7A-4B0D-BB34-E05762AABC7E} = {DEF97E12-59D4-4059-B37E-B975675419FA}
+		{F3A545A5-3945-4DD1-BD50-95B72C30B5D1} = {59C7F48F-068A-4875-9674-8358234FCCE3}
+		{B5CA5F1A-932D-4DA1-AE29-2BFB647BE777} = {59C7F48F-068A-4875-9674-8358234FCCE3}
+		{67233C4B-2472-4EC6-A82F-FF7839B84616} = {F3A545A5-3945-4DD1-BD50-95B72C30B5D1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {678418E4-518F-452C-B3DE-0526431A1EBF}

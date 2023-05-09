@@ -9,7 +9,7 @@ public sealed class DayCommandService : CommandService<Day, DayState, DayId>
     public DayCommandService(IAggregateStore store, StreamNameMap? streamNameMap = null)
         : base(store, streamNameMap:  streamNameMap)
     {
-        OnNew<DayCommands.ScheduleDay>(
+        OnAny<DayCommands.ScheduleDay>(
             cmd => DayId.Create(new DoctorId(cmd.DoctorId), cmd.Date),
             (day, cmd) =>
             {
