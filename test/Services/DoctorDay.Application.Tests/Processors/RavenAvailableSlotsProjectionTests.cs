@@ -23,9 +23,9 @@ using static DoctorDay.Domain.DayAggregate.DayEvents;
 namespace DoctorDay.Application.Tests.Processors;
 
 [Collection("TypeMapper collection")]
-public class AvailableSlotsProjectionTests : HandlerTest, IClassFixture<DockerFixture>
+public class RavenAvailableSlotsProjectionTests : HandlerTest, IClassFixture<DockerFixture>
 {
-    const string SubscriptionName = nameof(AvailableSlotsProjectionTests);
+    const string SubscriptionName = nameof(RavenAvailableSlotsProjectionTests);
 
     const string RavenPrefix = "AvailableSlots";
 
@@ -37,13 +37,12 @@ public class AvailableSlotsProjectionTests : HandlerTest, IClassFixture<DockerFi
 
     IAvailableSlotsRepository _repository = default;
 
-    public AvailableSlotsProjectionTests(DockerFixture dockerFixture)
+    public RavenAvailableSlotsProjectionTests(DockerFixture dockerFixture)
     {
         dockerFixture.Init(() => new DockerFixtureOptions()
         {
-            DockerComposeFiles = new[] { "docker-compose.yml" },
+            DockerComposeFiles = new[] { "docker-compose-raven.yml" },
             DebugLog = true,
-            //DockerComposeUpArgs = "--build",
             DockerComposeDownArgs = "--remove-orphans --volumes",
             CustomUpTest = output => output.Any(l => l.Contains("Running non-interactive."))
         });
@@ -53,22 +52,18 @@ public class AvailableSlotsProjectionTests : HandlerTest, IClassFixture<DockerFi
         _dayId = DayId.Create(_doctorId, _date);
         _tenMinutes = TimeSpan.FromMinutes(10);
         _createdOn = new DateTimeOffset(2023, 5, 1, 7, 0, 0, TimeSpan.Zero);
+
+        EnableAtLeastOnceMonkey = false;
+        EnableAtLeastOnceGorilla = false;
     }
 
     protected override IEventHandler GetHandler() => GetRavenHandler();
-
-    IEventHandler GetMongoHandler()
-    {
-        _repository = new MongoAvailableSlotsRepository(new MongoClient("mongodb://localhost:27017"));
-        return new AvailableSlotsProjection(_repository);
-    }
 
     IEventHandler GetRavenHandler()
     {
         var documentStore = new DocumentStore
         {
             Urls = new[] { "http://localhost:8080" },
-            //Urls = new[] { "http://raven.db.unittests:8080" },
             Database = "DoctorDay",
         };
         documentStore.Initialize();

@@ -1,0 +1,25 @@
+version: '3.4'
+
+services:
+  mongo.db.unittest:
+    image: mongo
+    container_name: mongo.db.unittest
+    hostname: mongo.db.unittest
+    environment:
+      - MONGO_INITDB_DATABASE=projections
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    ports:
+      - "27017-27019:27017-27019"
+    volumes:
+      - ./data/db:/data/db
+
+  #azurite:
+  #  image: mcr.microsoft.com/azure-storage/azurite
+  #  container_name: "azurite"
+  #  hostname: azurite
+  #  restart: always
+  #  ports:
+  #    - "10000:10000"
+  #    - "10001:10001"
+  #    - "10002:10002"
