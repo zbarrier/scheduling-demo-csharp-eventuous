@@ -122,6 +122,6 @@ public sealed class RavenAvailableSlotsRepository : IAvailableSlotsRepository
         return EventHandlingStatus.Success;
     }
 
-    string GetFullId(Guid shortId) => $"{_prefix}/{shortId}";
-    string GetFullId(string shortId) => $"{_prefix}/{shortId}";
+    string GetFullId(Guid slotId) => $"{_prefix}/{slotId}";
+    string GetFullId(string slotId) => $"{_prefix}/{slotId}";
 }

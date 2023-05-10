@@ -1,0 +1,24 @@
+version: '3.4'
+
+services:
+  raven.db.unittest:
+    image: ravendb/ravendb
+    container_name: raven.db.unittest
+    hostname: raven.db.unittest
+    environment:
+      - RAVEN_IN_DOCKER=true
+      - RAVEN_Setup_Mode=Unsecured
+      - RAVEN_License_Eula_Accepted=true
+      - RAVEN_Security_UnsecuredAccessAllowed=PublicNetwork
+    ports:
+      - "8080:8080"
+
+  #azurite:
+  #  image: mcr.microsoft.com/azure-storage/azurite
+  #  container_name: "azurite"
+  #  hostname: azurite
+  #  restart: always
+  #  ports:
+  #    - "10000:10000"
+  #    - "10001:10001"
+  #    - "10002:10002"

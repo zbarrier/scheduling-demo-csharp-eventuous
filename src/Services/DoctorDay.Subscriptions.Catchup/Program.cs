@@ -24,6 +24,7 @@ using Eventuous.EventStore.Subscriptions;
 using Eventuous.Producers;
 
 using Raven.Client.Documents;
+using Raven.Client.ServerWide.Operations;
 
 namespace DoctorDay.Subscriptions.Catchup;
 
@@ -82,14 +83,21 @@ public class Program
                                     Urls = configuration["RavenDB:Server"]!.Split(',', System.StringSplitOptions.RemoveEmptyEntries),
                                     Database = configuration["RavenDB:Database"],
                                     Conventions =
-                                            {
-                                                AggressiveCache =
-                                                {
-                                                    Duration = TimeSpan.FromDays(1),
-                                                    Mode = Raven.Client.Http.AggressiveCacheMode.TrackChanges
-                                                }
-                                            }
+                                    {
+                                        AggressiveCache =
+                                        {
+                                            Duration = TimeSpan.FromDays(1),
+                                            Mode = Raven.Client.Http.AggressiveCacheMode.TrackChanges
+                                        }
+                                    }
                                 }.Initialize();
+
+                                if (hostContext.HostingEnvironment.IsDevelopment())
+                                {
+                                    documentStore.Maintenance.Server.Send(
+                                        new CreateDatabaseOperation(new Raven.Client.ServerWide.DatabaseRecord(configuration["RavenDB:Database"]))
+                                    );
+                                }
 
                                 _ = documentStore.AggressivelyCache();
 
