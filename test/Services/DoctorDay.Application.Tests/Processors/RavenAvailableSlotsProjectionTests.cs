@@ -16,9 +16,15 @@ using Eventuous.TestHelpers;
 using MongoDB.Driver;
 
 using Raven.Client.Documents;
+using Raven.Client.Documents.Operations;
+using Raven.Client.Exceptions.Database;
+using Raven.Client.Exceptions;
+using Raven.Client.ServerWide;
 using Raven.Client.ServerWide.Operations;
 
 using static DoctorDay.Domain.DayAggregate.DayEvents;
+
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerClass, DisableTestParallelization = true)]
 
 namespace DoctorDay.Application.Tests.Processors;
 
@@ -39,7 +45,7 @@ public class RavenAvailableSlotsProjectionTests : HandlerTest, IClassFixture<Doc
 
     public RavenAvailableSlotsProjectionTests(DockerFixture dockerFixture)
     {
-        dockerFixture.Init(() => new DockerFixtureOptions()
+        dockerFixture.InitOnce(() => new DockerFixtureOptions()
         {
             DockerComposeFiles = new[] { "docker-compose-raven.yml" },
             DebugLog = true,
@@ -68,13 +74,38 @@ public class RavenAvailableSlotsProjectionTests : HandlerTest, IClassFixture<Doc
         };
         documentStore.Initialize();
 
-        documentStore.Maintenance.Server.Send(
-            new CreateDatabaseOperation(new Raven.Client.ServerWide.DatabaseRecord("DoctorDay"))
-        );
+        EnsureDatabaseExists(documentStore, "DoctorDay", true);
 
         _repository = new RavenAvailableSlotsRepository(documentStore);
 
         return new AvailableSlotsProjection(_repository);
+    }
+
+    void EnsureDatabaseExists(IDocumentStore store, string? database, bool createDatabaseIfNotExists = true)
+    {
+        database = database ?? store.Database;
+
+        if (string.IsNullOrWhiteSpace(database))
+            throw new ArgumentException("Value cannot be null or whitespace.", nameof(database));
+
+        try
+        {
+            store.Maintenance.ForDatabase(database).Send(new GetStatisticsOperation());
+        }
+        catch (DatabaseDoesNotExistException)
+        {
+            if (createDatabaseIfNotExists == false)
+                throw;
+
+            try
+            {
+                _ = store.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(database)));
+            }
+            catch (ConcurrencyException)
+            {
+                // The database was already created before calling CreateDatabaseOperation
+            }
+        }
     }
 
     [Fact]
@@ -99,6 +130,65 @@ public class RavenAvailableSlotsProjectionTests : HandlerTest, IClassFixture<Doc
                     Position = 5000
                 }
             }, await _repository.GetAvailableSlotsOn(_date, default));
+
+        //Cleanup
+        await _repository.DeleteSlot(slotId, 5001, default);
+    }
+
+    [Fact]
+    public async Task Handle_SlotBooked_ReadModelUpdated()
+    {
+        var slotId = SlotId.Create(Guid.NewGuid());
+        var patientId = "jdoe";
+
+        var slotScheduled = new V1.SlotScheduled(slotId, _date, _tenMinutes);
+        var slotBooked = new V1.SlotBooked(slotId, patientId);
+
+        await Given(
+            slotScheduled.AddMessageConsumeContext(new StreamName($"Day-{_dayId}"), 0, 5000, createdOnUtc: _createdOn),
+            slotBooked.AddMessageConsumeContext(new StreamName($"Day-{_dayId}"), 1, 5100, createdOnUtc: _createdOn.AddHours(1))
+        );
+
+        Then(new List<ReadModels.AvailableSlot>() { }, 
+            await _repository.GetAvailableSlotsOn(_date, default)
+        );
+
+        //Cleanup
+        await _repository.DeleteSlot(slotId, 5101, default);
+    }
+
+    [Fact]
+    public async Task Handle_SlotBookingCancelled_ReadModelUpdated()
+    {
+        var slotId = SlotId.Create(Guid.NewGuid());
+        var patientId = "jdoe";
+        var reason = "Conflict.";
+
+        var slotScheduled = new V1.SlotScheduled(slotId, _date, _tenMinutes);
+        var slotBooked = new V1.SlotBooked(slotId, patientId);
+        var slotBookingCancelled = new V1.SlotBookingCancelled(slotId, reason);
+
+        await Given(
+            slotScheduled.AddMessageConsumeContext(new StreamName($"Day-{_dayId}"), 0, 5000, createdOnUtc: _createdOn),
+            slotBooked.AddMessageConsumeContext(new StreamName($"Day-{_dayId}"), 1, 5100, createdOnUtc: _createdOn.AddHours(1)),
+            slotBookingCancelled.AddMessageConsumeContext(new StreamName($"Day-{_dayId}"), 3, 5200, createdOnUtc: _createdOn.AddHours(2))
+        );
+
+        Then(new List<ReadModels.AvailableSlot> {
+                new ReadModels.AvailableSlot(
+                    GetFullRavenId(slotScheduled.SlotId),
+                    _dayId,
+                    slotScheduled.SlotStartTime.Date.ToString("yyyy-MM-dd"),
+                    slotScheduled.SlotStartTime.ToString("h:mm tt"),
+                    slotScheduled.SlotDuration
+                )
+                {
+                    Position = 5200
+                }
+            }, await _repository.GetAvailableSlotsOn(_date, default));
+
+        //Cleanup
+        await _repository.DeleteSlot(slotId, 5201, default);
     }
 
     string GetFullRavenId(Guid slotId) => $"{RavenPrefix}/{slotId}";

@@ -24,6 +24,10 @@ using Eventuous.EventStore.Subscriptions;
 using Eventuous.Producers;
 
 using Raven.Client.Documents;
+using Raven.Client.Documents.Operations;
+using Raven.Client.Exceptions.Database;
+using Raven.Client.Exceptions;
+using Raven.Client.ServerWide;
 using Raven.Client.ServerWide.Operations;
 
 namespace DoctorDay.Subscriptions.Catchup;
@@ -94,9 +98,7 @@ public class Program
 
                                 if (hostContext.HostingEnvironment.IsDevelopment())
                                 {
-                                    documentStore.Maintenance.Server.Send(
-                                        new CreateDatabaseOperation(new Raven.Client.ServerWide.DatabaseRecord(configuration["RavenDB:Database"]))
-                                    );
+                                    EnsureRavenDatabaseExists(documentStore, configuration["RavenDB:Database"], true);
                                 }
 
                                 _ = documentStore.AggressivelyCache();
@@ -149,5 +151,32 @@ public class Program
             .Build();
 
         host.Run();
+    }
+
+    static void EnsureRavenDatabaseExists(IDocumentStore store, string? database, bool createDatabaseIfNotExists = true)
+    {
+        database = database ?? store.Database;
+
+        if (string.IsNullOrWhiteSpace(database))
+            throw new ArgumentException("Value cannot be null or whitespace.", nameof(database));
+
+        try
+        {
+            store.Maintenance.ForDatabase(database).Send(new GetStatisticsOperation());
+        }
+        catch (DatabaseDoesNotExistException)
+        {
+            if (createDatabaseIfNotExists == false)
+                throw;
+
+            try
+            {
+                _ = store.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(database)));
+            }
+            catch (ConcurrencyException)
+            {
+                // The database was already created before calling CreateDatabaseOperation
+            }
+        }
     }
 }

@@ -37,7 +37,7 @@ public class MongoAvailableSlotsProjectionTests : HandlerTest, IClassFixture<Doc
 
     public MongoAvailableSlotsProjectionTests(DockerFixture dockerFixture)
     {
-        dockerFixture.Init(() => new DockerFixtureOptions()
+        dockerFixture.InitOnce(() => new DockerFixtureOptions()
         {
             DockerComposeFiles = new[] { "docker-compose-mongo.yml" },
             DebugLog = true,
@@ -85,6 +85,9 @@ public class MongoAvailableSlotsProjectionTests : HandlerTest, IClassFixture<Doc
                     Position = 5000
                 }
             }, await _repository.GetAvailableSlotsOn(_date, default));
+
+        //Cleanup
+        await _repository.DeleteSlot(slotId, 5001, default);
     }
 
     string GetFullId(Guid slotId) => $"{slotId}";
