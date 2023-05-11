@@ -27,8 +27,6 @@ public class MongoAvailableSlotsProjectionTests : HandlerTest, IClassFixture<Doc
 {
     const string SubscriptionName = nameof(MongoAvailableSlotsProjectionTests);
 
-    const string RavenPrefix = "AvailableSlots";
-
     readonly DoctorId _doctorId;
     readonly DateTimeOffset _date;
     readonly DayId _dayId;
@@ -61,7 +59,7 @@ public class MongoAvailableSlotsProjectionTests : HandlerTest, IClassFixture<Doc
 
     IEventHandler GetMongoHandler()
     {
-        _repository = new MongoAvailableSlotsRepository(new MongoClient("mongodb://localhost:27017"));
+        _repository = new MongoAvailableSlotsRepository(new MongoClient("mongodb://localhost:28017"));
         return new AvailableSlotsProjection(_repository);
     }
 

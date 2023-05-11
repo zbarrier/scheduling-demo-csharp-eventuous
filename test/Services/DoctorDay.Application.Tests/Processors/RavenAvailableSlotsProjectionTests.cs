@@ -63,7 +63,7 @@ public class RavenAvailableSlotsProjectionTests : HandlerTest, IClassFixture<Doc
     {
         var documentStore = new DocumentStore
         {
-            Urls = new[] { "http://localhost:8080" },
+            Urls = new[] { "http://localhost:8180" },
             Database = "DoctorDay",
         };
         documentStore.Initialize();
