@@ -53,6 +53,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DoctorDay.Application.Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.CombGuid", "src\BuildingBlocks\CombGuid\BuildingBlocks.CombGuid.csproj", "{14C66AE5-42F8-492D-824E-139C40264991}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eventuous.Projections.RavenDB.TestUtils", "test\Eventuous.Projections.RavenDB.TestUtils\Eventuous.Projections.RavenDB.TestUtils.csproj", "{7777C6FF-0B7E-411F-B8E8-E14D7D384485}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,10 @@ Global
 		{14C66AE5-42F8-492D-824E-139C40264991}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14C66AE5-42F8-492D-824E-139C40264991}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14C66AE5-42F8-492D-824E-139C40264991}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7777C6FF-0B7E-411F-B8E8-E14D7D384485}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7777C6FF-0B7E-411F-B8E8-E14D7D384485}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7777C6FF-0B7E-411F-B8E8-E14D7D384485}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7777C6FF-0B7E-411F-B8E8-E14D7D384485}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -147,6 +153,7 @@ Global
 		{67233C4B-2472-4EC6-A82F-FF7839B84616} = {F3A545A5-3945-4DD1-BD50-95B72C30B5D1}
 		{30927FAE-DFD1-4B34-A6CE-3FB49E6DC2FA} = {F3A545A5-3945-4DD1-BD50-95B72C30B5D1}
 		{14C66AE5-42F8-492D-824E-139C40264991} = {141E25AF-C7A0-4325-8F6B-FCDC8FED089F}
+		{7777C6FF-0B7E-411F-B8E8-E14D7D384485} = {59C7F48F-068A-4875-9674-8358234FCCE3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {678418E4-518F-452C-B3DE-0526431A1EBF}
