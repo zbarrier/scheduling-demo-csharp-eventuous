@@ -23,6 +23,7 @@ using Raven.Client.ServerWide;
 using Raven.Client.ServerWide.Operations;
 
 using static DoctorDay.Domain.DayAggregate.DayEvents;
+using Raven.Client.Documents.Conventions;
 
 [assembly: CollectionBehavior(CollectionBehavior.CollectionPerClass, DisableTestParallelization = true)]
 
@@ -67,18 +68,33 @@ public class RavenAvailableSlotsProjectionTests : HandlerTest, IClassFixture<Doc
 
     IEventHandler GetRavenHandler()
     {
+        var databaseName = $"DoctorDay_{Guid.NewGuid()}";
+
         var documentStore = new DocumentStore
         {
             Urls = new[] { "http://localhost:8180" },
-            Database = "DoctorDay",
+            Database = databaseName,
         };
+
+        documentStore.Conventions.AggressiveCache.Duration = TimeSpan.Zero;
+
+        documentStore.Conventions.FindCollectionName = GetFindCollectionName;
+
         documentStore.Initialize();
 
-        EnsureDatabaseExists(documentStore, "DoctorDay", true);
+        EnsureDatabaseExists(documentStore, databaseName, true);
 
         _repository = new RavenAvailableSlotsRepository(documentStore);
 
         return new AvailableSlotsProjection(_repository);
+    }
+
+    string GetFindCollectionName(Type type)
+    {
+        return type switch
+        {
+            _ => DocumentConventions.DefaultGetCollectionName(type)
+        };
     }
 
     void EnsureDatabaseExists(IDocumentStore store, string? database, bool createDatabaseIfNotExists = true)
