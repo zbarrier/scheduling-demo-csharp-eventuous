@@ -1,182 +1,86 @@
-using System.Text.Json;
+using System.Diagnostics;
 
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
-using BuildingBlocks.Archivers;
 using BuildingBlocks.Archivers.Azure;
-using BuildingBlocks.JsonConverters;
-using BuildingBlocks.Projections.RavenDB;
+using BuildingBlocks.CombGuid;
 
-using DoctorDay.Application.Commands;
 using DoctorDay.Application.Processors;
-using DoctorDay.Application.Queries;
-using DoctorDay.Domain.DayAggregate;
-using DoctorDay.Infrastructure;
-using DoctorDay.Infrastructure.RavenDB;
-
-using EventStore.Client;
 
 using Eventuous;
-using Eventuous.EventStore;
-using Eventuous.EventStore.Producers;
-using Eventuous.EventStore.Subscriptions;
-using Eventuous.Producers;
 
-using Raven.Client.Documents;
-using Raven.Client.Documents.Operations;
-using Raven.Client.Exceptions.Database;
-using Raven.Client.Exceptions;
-using Raven.Client.ServerWide;
-using Raven.Client.ServerWide.Operations;
+using Serilog;
 
 namespace DoctorDay.Subscriptions.Catchup;
 
 public class Program
 {
+    static readonly string AppName = typeof(Program).Namespace!.Replace('.', '-');
+
     public static void Main(string[] args)
     {
-        IHost host = Host.CreateDefaultBuilder(args)
-            .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-            .ConfigureServices((hostContext, services) =>
-            {
-                IConfiguration configuration = hostContext.Configuration;
+        Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
-                _ = services.AddOptions()
-                            .Configure<AzureBlobColdStorageOptions>(configuration.GetSection("AzureBlobColdStorage"))
-                            .Configure<DayArchiverProcessManagerOptions>(configuration.GetSection("DayArchiverProcessManager"))
-                            .Configure<OverbookingProcessManagerOptions>(configuration.GetSection("OverbookingProcessManager"));
-
-                _ = hostContext.HostingEnvironment.IsDevelopment()
-                    ? services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace))
-                    : services.AddLogging();
-
-                //Serialization
-                _ = services.AddSingleton<System.Text.Json.JsonSerializerOptions>((provider) => 
-                            {
-                                var options = new System.Text.Json.JsonSerializerOptions();
-                                options.Converters.Add(new TimeSpanConverter());
-                                return options;
-                            });
-                DefaultEventSerializer.SetDefaultSerializer(new DefaultEventSerializer(new JsonSerializerOptions(JsonSerializerDefaults.Web)));
-
-                //Event Mappings
-                TypeMap.RegisterKnownEventTypes();
-
-                //EventStoreDB
-                _ = services.AddSingleton<EventStoreClient>((provider) =>
-                            {
-                                var settings = EventStoreClientSettings.Create(configuration["EventStoreDB:ConnectionString"]);
-                                settings.ConnectionName = configuration["EventStoreDB:ConnectionName"];
-                                settings.DefaultCredentials = new UserCredentials(
-                                    configuration["EventStoreDB:UserCredentials:Username"]!,
-                                    configuration["EventStoreDB:UserCredentials:Password"]!
-                                );
-
-                                return new EventStoreClient(settings);
-                            })
-                            .AddAggregateStore<EsdbEventStore>()
-                            .AddCommandService<DayCommandService, Day>()
-                            .AddSingleton<IEventSerializer, DefaultEventSerializer>();
-
-                //RavenDB
-                _ = services.AddSingleton<IDocumentStore>((provider) =>
-                            {
-                                var documentStore = new DocumentStore
-                                {
-                                    Urls = configuration["RavenDB:Server"]!.Split(',', System.StringSplitOptions.RemoveEmptyEntries),
-                                    Database = configuration["RavenDB:Database"],
-                                    Conventions =
-                                    {
-                                        AggressiveCache =
-                                        {
-                                            Duration = TimeSpan.FromDays(1),
-                                            Mode = Raven.Client.Http.AggressiveCacheMode.TrackChanges
-                                        }
-                                    }
-                                }.Initialize();
-
-                                if (hostContext.HostingEnvironment.IsDevelopment())
-                                {
-                                    EnsureRavenDatabaseExists(documentStore, configuration["RavenDB:Database"], true);
-                                }
-
-                                _ = documentStore.AggressivelyCache();
-
-                                return documentStore;
-                            })
-                            .AddSingleton<RavenCheckpointStore>((provider) =>
-                                new RavenCheckpointStore(
-                                    provider.GetRequiredService<ILogger<RavenCheckpointStore>>(),
-                                    provider.GetRequiredService<IDocumentStore>(),
-                                    batchSize: 5
-                                )
-                            )
-                            .AddSingleton<IAvailableSlotsRepository, RavenAvailableSlotsRepository>()
-                            .AddSingleton<IArchivableDaysRepository, RavenArchivableDaysRepository>()
-                            .AddSingleton<IBookedSlotsRepository, RavenBookedSlotsRepository>();
-
-                //Cold Storage
-                _ = services.AddSingleton<IColdStorage, AzureBlobColdStorage>();
-
-                //Subscriptions
-                services.AddSubscription<AllStreamSubscription, AllStreamSubscriptionOptions>(
-                            "RavenDayProjections",
-                            builder =>
-                            {
-                                builder.ConfigureOptions(new AllStreamSubscriptionOptions()
-                                {
-                                    EventFilter = StreamFilter.Prefix("Day-", "calendar_events"),
-
-                                });
-
-                                builder.UseCheckpointStore<RavenCheckpointStore>()
-                                       .AddEventHandler<AvailableSlotsProjection>()
-                                       .AddEventHandler<DayArchiverProcessManager>()
-                                       .AddEventHandler<OverbookingProcessManager>();
-                            }
-                        );
-
-                //Producers
-                services.AddEventProducer<EventStoreProducer>((provider) => {
-                            var client = provider.GetRequiredService<EventStoreClient>();
-                            var serializer = provider.GetRequiredService<IEventSerializer>();
-
-                            return new EventStoreProducer(client, serializer);
-                        });
-            })
-            .ConfigureContainer<ContainerBuilder>((context, builder) => {
-
-            })
-            .Build();
-
-        host.Run();
-    }
-
-    static void EnsureRavenDatabaseExists(IDocumentStore store, string? database, bool createDatabaseIfNotExists = true)
-    {
-        database = database ?? store.Database;
-
-        if (string.IsNullOrWhiteSpace(database))
-            throw new ArgumentException("Value cannot be null or whitespace.", nameof(database));
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
 
         try
         {
-            store.Maintenance.ForDatabase(database).Send(new GetStatisticsOperation());
-        }
-        catch (DatabaseDoesNotExistException)
-        {
-            if (createDatabaseIfNotExists == false)
-                throw;
+            CombGuid.Initialize();
 
-            try
-            {
-                _ = store.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(database)));
-            }
-            catch (ConcurrencyException)
-            {
-                // The database was already created before calling CreateDatabaseOperation
-            }
+            TypeMap.RegisterKnownEventTypes();
+
+            IHost host = Host.CreateDefaultBuilder(args)
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+                .ConfigureServices((hostContext, services) =>
+                {
+                    IConfiguration configuration = hostContext.Configuration;
+                    IHostEnvironment environment = hostContext.HostingEnvironment;
+
+                    _ = services
+                        .AddOptions()
+                        .Configure<AzureBlobColdStorageOptions>(configuration.GetSection("AzureBlobColdStorage"))
+                        .Configure<DayArchiverProcessManagerOptions>(configuration.GetSection("DayArchiverProcessManager"))
+                        .Configure<OverbookingProcessManagerOptions>(configuration.GetSection("OverbookingProcessManager"));
+
+                    _ = hostContext.HostingEnvironment.IsDevelopment()
+                        ? services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace))
+                        : services.AddLogging();
+
+                    //Event Mappings
+                    TypeMap.RegisterKnownEventTypes();
+
+                    _ = services
+                        .AddColdStorage(configuration, environment)
+                        .AddEventStoreDB(configuration, environment)
+                        .AddProducers(configuration, environment)
+                        .AddRavenDB(configuration, environment)
+                        .AddSubscriptions(configuration, environment);
+                })
+                .ConfigureContainer<ContainerBuilder>((context, builder) =>
+                {
+                    IConfiguration configuration = context.Configuration;
+                    IHostEnvironment environment = context.HostingEnvironment;
+                })
+                .UseSerilog((context, services, configuration) =>
+                {
+                    configuration
+                        .ReadFrom.Configuration(context.Configuration)
+                        .ReadFrom.Services(services);
+                })
+                .Build();
+
+            host.Run();
+        }
+        catch (Exception ex) 
+        {
+            Log.Fatal(ex, "Program {AppName} terminated unexpectedly!", AppName);
+        }
+        finally
+        {
+            Log.CloseAndFlush();
         }
     }
 }
